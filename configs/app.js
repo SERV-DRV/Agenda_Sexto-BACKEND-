@@ -7,6 +7,7 @@ import { corsOptions } from './cors-configurations.js';
 import { dbConnection } from '../configs/db.js';
 
 import contactRoutes from '../src/contacts/contact.router.js';
+import taskRoutes from '../src/tasks/task.router.js';
 
 const BASE_URL = '/agendaSexto/v1';
 
@@ -20,6 +21,7 @@ const middlewares = (app) => {
 
 const routes = (app) => {
     app.use(`${BASE_URL}/contacts`, contactRoutes);
+    app.use(`${BASE_URL}/tasks`, taskRoutes);
 }
 
 const initServer = async (app) => {

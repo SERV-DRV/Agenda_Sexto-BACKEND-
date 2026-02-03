@@ -1,7 +1,7 @@
-import Contact from './contact.model.js';
+import Task from './task.model.js';
 import { cloudinary } from '../../middlewares/file-uploader.js';
 
-export const getContacts = async (req, res) => {
+export const getTasks = async (req, res) => {
     try {
         const { page = 1, limit = 10, isActive } = req.query;
         const filter = {isActive};
@@ -13,16 +13,16 @@ export const getContacts = async (req, res) => {
 
         };
 
-        const contacts = await Contact.find(filter)
+        const tasks = await Task.find(filter)
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .sort(options.sort);
 
-        const total = await Contact.countDocuments(filter);
+        const total = await Task.countDocuments(filter);
 
         res.status(200).json({
             succes: true,
-            data: contacts,
+            data: tasks,
             pagination: {
                 cuurentPage: page,
                 totalPages: Math.ceil(total / limit),
@@ -33,41 +33,41 @@ export const getContacts = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Error al obtener los contactos',
+            message: 'Error al obtener las tareas',
             error: error.message
         });
     }
 
 };
 
-export const getContactsById = async (req, res) => {
+export const getTaskById = async (req, res) => {
     try {
         const { id } = req.params;
-        const contact = await Contact.findById(id);
+        const task = await Task.findById(id);
 
-        if (!contact) {
+        if (!task) {
             return res.status(404).json({
                 success: false,
-                message: 'Contacto no encontrado'
+                message: 'Tarea no encontrada'
             });
         }
 
         res.status(200).json({
             success: true,
-            data: contact
+            data: task
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Error al obtener el contacto',
+            message: 'Error al obtener la tarea',
             error: error.message
         });
     }
 };
 
-export const createContact = async (req, res) => {
+export const createTask = async (req, res) => {
     try {
-        const contactData = req.body;
+        const taskData = req.body;
 
         if (req.file) {
             const extension = req.file.path.split('.').pop();
@@ -77,29 +77,29 @@ export const createContact = async (req, res) => {
                 fileName.indexOf('contacts/')
             );
     
-        contactData.photo = `${relativePath}.${extension}`;
+        taskData.photo = `${relativePath}.${extension}`;
         } else {
-            contactData.photo = 'contacts/kinal_sport_nyvxo5';
+            taskData.photo = 'contacts/kinal_sport_nyvxo5';
         }
 
-        const contact = new Contact(contactData);
-        await contact.save();
+        const task = new Task(taskData);
+        await task.save();
         res.status(201).json({
             succes: true,
-            message: 'Contacto creado exitosamente',
-            data: contact
+            message: 'Tarea creada exitosamente',
+            data: task
         })
 
     } catch (error) {
         res.status(500).json({
             succes: false,
-            message: 'Error al crear el contacto',
+            message: 'Error al crear la tarea',
             error: error.message
         })
     }
 };
 
-export const updateContact = async (req, res) => {
+export const updateTask = async (req, res) => {
     try {
         const { id } = req.params;
         //(...)significa que cuando se colocan la posicion que se coloca traiga todo lo detras de el
@@ -107,10 +107,10 @@ export const updateContact = async (req, res) => {
         const updateData = {...req.body};
 
         if (req.file) {
-            const currentContact = await Contact.findById(id);
+            const currentTask = await Task.findById(id);
 
-            if (currentContact && currentContact.photo) {
-                const photoPath = currentContact.photo;
+            if (currentTask && currentTask.photo) {
+                const photoPath = currentTask.photo;
                 const photoWithoutExt = photoPath.substring(
                     0, photoPath.lastIndexOf('.')
                 );
@@ -126,67 +126,67 @@ export const updateContact = async (req, res) => {
 
             const extension = req.file.path.split('.').pop();
             const fileName = req.file.filename;
-            const relativePath = fileName.includes('contacts/')
-                ? fileName.substring(fileName.indexOf('contacts/'))
+            const relativePath = fileName.includes('tasks/')
+                ? fileName.substring(fileName.indexOf('tasks/'))
                 : fileName;
             updateData.photo = `${relativePath}.${extension}`;
         }
 
-        const contact = await Contact.findByIdAndUpdate(id, updateData, {
+        const task = await Task.findByIdAndUpdate(id, updateData, {
             new: true,
             runValidators: true
         });
 
-        if (!contact) {
+        if (!task) {
             return res.status(404).json({
                 success: false,
-                message: 'Contacto no encontrado'
+                message: 'Tarea no encontrada'
             });
         }
 
         res.status(200).json({
             success: true,
-            message: 'Contacto actualizado exitosamente',
-            data: contact
+            message: 'Tarea actualizada exitosamente',
+            data: task
         });
     } catch (error) {
-        res,status(400).json({
+        res.status(400).json({
             success: false,
-            message: 'Error al actualizar el contacto',
+            message: 'Error al actualizar la tarea',
             error: error.message
         });
     }
 };
 
-export const changeContactStatus = async (req, res) => {
+export const changeTaskStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const isActive = req.url.includes('/activate');
         const action = isActive ? 'activado' : 'desactivado';
 
-        const contact = await Contact.findByIdAndUpdate(
+        const task = await Task.findByIdAndUpdate(
             id,
             { isActive },
             { new: true }
         );
 
-        if (!contact) {
+        if (!task) {
             return res.status(404).json({
                 success: false,
-                message: 'Contacto no encontrado'
+                message: 'Tarea no encontrada'
             });
         }
 
         res.status(200).json({
             success: true,
-            message: `Contacto ${action} exitosamente`,
-            data: contact
+            message: `Tarea ${action} exitosamente`,
+            data: task
         });
         
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Error al cambiar el estado del contacto',
+            message: 'Error al cambiar el estado de la tarea',
             error: error.message
         });
     }

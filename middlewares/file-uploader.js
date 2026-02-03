@@ -68,6 +68,6 @@ const createCloudinaryUploader = (folder) => {
 export const uploadContactImage = createCloudinaryUploader(
     process.env.CLOUDINARY_CONTACTS_FOLDER || 'agendaSexto/contacts'
 );
- 
+
 // Export cloudinary instance para usar en delete-file-on-error
 export { cloudinary };
