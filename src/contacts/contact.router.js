@@ -15,6 +15,7 @@ import {
     } from "../../middlewares/contacts-validators.js";
 
 import { uploadContactImage } from "../../middlewares/file-uploader.js";
+import { cleanupUploadedFileOnFinish } from '../../middlewares/delete-file-on-error.js';
 
 const router = Router();
 
@@ -23,7 +24,7 @@ router.get('/', getContacts);
 router.get('/:id', validateGetContactById, getContactsById);
 
 //POST
-router.post('/', uploadContactImage.single('image'), validateCreateContact, createContact);
+router.post('/', uploadContactImage.single('image'),cleanupUploadedFileOnFinish, validateCreateContact, createContact);
 
 //PUT
 router.put('/:id', uploadContactImage.single('image'), validateUpdateContactRequest, updateContact);

@@ -2,20 +2,26 @@
 
 import express from 'express';
 import cors from 'cors';
-import morgan from 'morgan';
+import morgan from 'morgan'
+import helmet  from 'helmet';
 import { corsOptions } from './cors-configurations.js';
 import { dbConnection } from '../configs/db.js';
-
+import { helmetConfiguration } from "./helmet-configuration.js";
+import { requestLimit } from '../middlewares/request-limit.js';
+import { errorHandler } from '../middlewares/handle-errors.js';
 import contactRoutes from '../src/contacts/contact.router.js';
 import taskRoutes from '../src/tasks/task.router.js';
 
 const BASE_URL = '/agendaSexto/v1';
 
 const middlewares = (app) => {
+    app.use(helmet(helmetConfiguration)); 
+    app.use(cors(corsOptions)); 
     app.use(express.urlencoded( { extended: false, limit: '10mb'}));
     app.use(express.json({limit: '10mb'}));
-    app.use(cors(corsOptions));
+    app.use(requestLimit);
     app.use(morgan('dev'));
+    
 }
 
 
@@ -27,10 +33,12 @@ const routes = (app) => {
 const initServer = async (app) => {
     app = express();
     const PORT = process.env.PORT || 3001
+
     try {
         dbConnection();
         middlewares(app);
         routes(app);
+        app.use(errorHandler);
 
         app.listen(PORT, () => {
             console.log(`Servidor corriendo en el puerto ${PORT}`);
